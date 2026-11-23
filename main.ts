@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const TEXT =
@@ -17,3 +17,19 @@ if (!TEXT.trim()) {
 
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "entry.txt"), TEXT, "utf8");
+
+// Output validation: read the written file back and verify it is exactly
+// what we intended — exists, 1-280 Unicode code points, not only whitespace.
+const written = readFileSync(join(outDir, "entry.txt"), "utf8");
+const writtenLen = [...written].length;
+if (written !== TEXT) {
+  throw new Error("entry.txt content does not match the intended joke text");
+}
+if (writtenLen < 1 || writtenLen > 280) {
+  throw new Error(
+    `entry.txt is ${writtenLen} code points, must be 1-280`,
+  );
+}
+if (!written.trim()) {
+  throw new Error("entry.txt must not be only whitespace");
+}
